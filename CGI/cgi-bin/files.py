@@ -9,10 +9,12 @@ File: files.py
 Time: 2018-05-08 20:55
 Desc: Core Python Programming Chapter 20,  20-16
 '''
-import cgi
+#import cgi
 import cgitb;cgitb.enable()
 import zipfile
 import os
+
+import mycgi
 
 header = "Content-Type: text/html\r\n\r\n"
 
@@ -52,27 +54,30 @@ upfilehtml = """
 """
 
 def do_upfile(upfile):
-    filename = upfile.filename
-    fp = upfile.file
-    with open(filename, 'wb+') as wfp:
-        for line in fp:
-            wfp.write(line)
-    fp.close()
+    if upfile == '404':
+        print header + "404 No Found"
+    else:
+        filename = upfile.filename
+        fp = upfile.file
+        with open(filename, 'wb+') as wfp:
+            for line in fp:
+                wfp.write(line)
+        fp.close()
 
-    if zipfile.is_zipfile(filename):
-        zfile = zipfile.ZipFile(filename)
-        extract_dir = os.path.splitext(filename)[0]
-        zfile.extractall(extract_dir)
-        zfile.close()
+        if zipfile.is_zipfile(filename):
+            zfile = zipfile.ZipFile(filename)
+            extract_dir = os.path.splitext(filename)[0]
+            zfile.extractall(extract_dir)
+            zfile.close()
 
-    print header + upfilehtml
+        print header + upfilehtml
 
 
 def main():
-    form = cgi.FieldStorage()
+    form = mycgi.MyFieldStorage()
 
     if form.has_key('upfile'):
-        upfile = form['upfile']
+        upfile = form.get('upfile', '404')
         do_upfile(upfile)
     else:
         show_form()
